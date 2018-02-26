@@ -2,13 +2,20 @@ package com.example.wgwong.budgettracker;
 
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Menu;
@@ -20,7 +27,11 @@ import org.w3c.dom.Text;
 
 import java.math.BigDecimal;
 
+import static android.support.v4.view.GravityCompat.*;
+import static com.example.wgwong.budgettracker.R.id.*;
+
 public class BudgetActivity extends AppCompatActivity {
+    private DrawerLayout mDrawerLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,8 +39,30 @@ public class BudgetActivity extends AppCompatActivity {
         setContentView(R.layout.activity_budget);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        ActionBar actionbar = getSupportActionBar();
+        actionbar.setDisplayHomeAsUpEnabled(true);
+        actionbar.setHomeAsUpIndicator(R.drawable.ic_menu_black_24dp);
 
-        FloatingActionButton fab = findViewById(R.id.new_transaction_button);
+        mDrawerLayout = findViewById(drawer_layout);
+        NavigationView navigationView = findViewById(nav_view);
+        navigationView.setNavigationItemSelectedListener(
+                new NavigationView.OnNavigationItemSelectedListener() {
+                    @Override
+                    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                        // set item as selected to persist highlight
+                        item.setChecked(true);
+                        // close drawer when item is tapped
+                        mDrawerLayout.closeDrawers();
+
+                        // Add code here to update the UI based on the item selected
+                        // For example, swap UI fragments here
+
+                        return true;
+                    }
+                }
+        );
+
+        FloatingActionButton fab = findViewById(new_transaction_button);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -53,9 +86,13 @@ public class BudgetActivity extends AppCompatActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        final int nav_drawer_button_id = 16908332;
+        switch (id) {
+            case nav_drawer_button_id:
+                mDrawerLayout.openDrawer(START);
+                return true;
+            case action_settings:
+                return true;
         }
 
         return super.onOptionsItemSelected(item);
@@ -76,20 +113,20 @@ public class BudgetActivity extends AppCompatActivity {
                 .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         // User clicked OK button
-                        String transactionCost = ((EditText) transactionDialogContentView.findViewById(R.id.new_transaction_cost_edittext)).getText().toString();
+                        String transactionCost = ((EditText) transactionDialogContentView.findViewById(new_transaction_cost_edittext)).getText().toString();
                         if (transactionCost.length() > 0) {
                             BigDecimal transactionValue = new BigDecimal(transactionCost);
                             transactionValue.setScale(2, BigDecimal.ROUND_HALF_UP);
 
 
-                            TextView dailyBalanceTextView = findViewById(R.id.daily_balance);
+                            TextView dailyBalanceTextView = findViewById(daily_balance);
 
                             BigDecimal dailyBalance = new BigDecimal(dailyBalanceTextView.getText().toString().substring(1));
                             BigDecimal newBalance = dailyBalance.add(transactionValue);
 
                             String newBalanceText = "$" + newBalance.toString();
                             dailyBalanceTextView.setText(newBalanceText);
-                            Snackbar.make(findViewById(R.id.coordinator_layout), R.string.new_transaction_added_snackbar_message, Snackbar.LENGTH_SHORT)
+                            Snackbar.make(findViewById(coordinator_layout), R.string.new_transaction_added_snackbar_message, Snackbar.LENGTH_SHORT)
                                     .show();
                         }
 
@@ -101,7 +138,7 @@ public class BudgetActivity extends AppCompatActivity {
                     }
                 });
 
-        final EditText edit = transactionDialogContentView.findViewById(R.id.new_transaction_cost_edittext);
+        final EditText edit = transactionDialogContentView.findViewById(new_transaction_cost_edittext);
         edit.addTextChangedListener(new TextWatcher() {
             boolean _ignore = false; // indicates if the change was made by the TextWatcher itself.
 
@@ -125,7 +162,6 @@ public class BudgetActivity extends AppCompatActivity {
                 if (decimalIndex > 0 && transactionString.substring(decimalIndex).length() > 2) {
                     editable.delete(decimalIndex+3,editable.length());
                 }
-                //editable.insert(0,"$");
 
                 _ignore = true; //prevent infinite loop
 
