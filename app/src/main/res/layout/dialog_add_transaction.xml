@@ -31,40 +31,41 @@
         android:layout_width="match_parent"
         android:layout_height="130dp"
         android:layout_margin="20px">
-        <RadioGroup xmlns:android="http://schemas.android.com/apk/res/android"
+        <RadioGroup
+            android:id="@+id/new_transaction_category_radiogroup"
+            xmlns:android="http://schemas.android.com/apk/res/android"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
-            <RadioButton android:id="@+id/radio_pirates"
+            <RadioButton android:id="@+id/radio_dining"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Dining"
-                android:onClick="onRadioButtonClicked"/>
-            <RadioButton android:id="@+id/radio_ninjas"
+                android:text="Dining"/>
+            <RadioButton android:id="@+id/radio_groceries"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Groceries" />
-            <RadioButton
+            <RadioButton android:id="@+id/radio_shopping"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Shopping" />
-            <RadioButton
+            <RadioButton android:id="@+id/radio_transportation"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Ground Transportation" />
-            <RadioButton
+            <RadioButton android:id="@+id/radio_travel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Travel" />
-            <RadioButton
+            <RadioButton android:id="@+id/radio_hotel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Hotel and Lodging" />
-            <RadioButton
+            <RadioButton android:id="@+id/radio_gas"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Gas Station and Fuel" />
-            <RadioButton
+            <RadioButton android:id="@+id/radio_other"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Other" />

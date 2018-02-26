@@ -1,5 +1,6 @@
 package com.example.wgwong.budgettracker;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -13,20 +14,32 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
 
 import static android.support.v4.view.GravityCompat.*;
 import static com.example.wgwong.budgettracker.R.id.*;
 
 public class BudgetActivity extends AppCompatActivity {
     private DrawerLayout mDrawerLayout;
+    private HashMap<String, ArrayList<Transaction>> transactions;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,6 +78,25 @@ public class BudgetActivity extends AppCompatActivity {
                 transactionDialog.show();
             }
         });
+
+        transactions = new HashMap<>();
+        transactions.put("today", new ArrayList<Transaction>());
+        transactions.put("weekly", new ArrayList<Transaction>());
+
+        //try and load previous balance
+        HashMap<String, String> balanceMap;
+        try {
+            balanceMap = (HashMap<String, String>) loadFile(getString(R.string.balance_filename));
+            ((TextView) findViewById(R.id.daily_balance)).setText(balanceMap.get("balance"));
+            Snackbar.make(findViewById(coordinator_layout), R.string.loaded_balance_message, Snackbar.LENGTH_SHORT)
+                    .show();
+        } catch (Exception e) {
+            //no old balance, proceed as usual
+            Log.w("warn", "No balance file found, initializing new balance");
+        }
+
+        //try and load previous transactions
+        //TODO
     }
 
     @Override
@@ -93,6 +125,38 @@ public class BudgetActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    public boolean saveFile(String filename, HashMap contents) {
+        FileOutputStream outputStream;
+        ObjectOutputStream out;
+        try {
+            outputStream = openFileOutput(filename, Context.MODE_PRIVATE);
+            out = new ObjectOutputStream(outputStream);
+            out.writeObject(contents);
+            out.close();
+            outputStream.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return true;
+    }
+
+    public Object loadFile(String filename) {
+        FileInputStream inputStream;
+        ObjectInputStream in;
+        Object contents = new Object();
+        try {
+            inputStream = new FileInputStream(getFilesDir() + "/" + filename);
+            in = new ObjectInputStream(inputStream);
+            contents = in.readObject();
+            in.close();
+            inputStream.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return contents;
+    }
+
     public AlertDialog createTransactionDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         LayoutInflater inflater = this.getLayoutInflater();
@@ -113,14 +177,37 @@ public class BudgetActivity extends AppCompatActivity {
                             BigDecimal transactionValue = new BigDecimal(transactionCost);
                             transactionValue.setScale(2, BigDecimal.ROUND_HALF_UP);
 
-
                             TextView dailyBalanceTextView = findViewById(daily_balance);
-
                             BigDecimal dailyBalance = new BigDecimal(dailyBalanceTextView.getText().toString().substring(1));
                             BigDecimal newBalance = dailyBalance.add(transactionValue);
 
                             String newBalanceText = "$" + newBalance.toString();
                             dailyBalanceTextView.setText(newBalanceText);
+
+                            //get transaction category
+                            RadioGroup rg = findViewById(R.id.new_transaction_category_radiogroup); //TODO find some way to not make this null
+                            RadioButton selectedRadioButton = findViewById(rg.getCheckedRadioButtonId());
+                            String selectedCategoryText = selectedRadioButton.getText().toString();
+
+                            Transaction transaction = new Transaction(new Date(), transactionValue, selectedCategoryText);
+                            transactions.get("today").add(transaction);
+                            transactions.get("weekly").add(transaction);
+
+                            //persist balance
+                            String filename = getString(R.string.balance_filename);
+                            HashMap<String, String> balanceMap = new HashMap<>();
+                            balanceMap.put("balance", newBalanceText);
+                            saveFile(filename, balanceMap);
+                            //persist transactions
+                            filename = getString(R.string.transactions_filename);
+                            saveFile(filename, transactions);
+
+                            //debug
+                            ArrayList<Transaction> transactionList = transactions.get("today");
+                            for (int i = 0; i < transactionList.size(); i++) {
+                                Log.d("debugg", transactionList.get(i).toString());
+                            }
+
                             Snackbar.make(findViewById(coordinator_layout), R.string.new_transaction_added_snackbar_message, Snackbar.LENGTH_SHORT)
                                     .show();
                         }
@@ -129,7 +216,7 @@ public class BudgetActivity extends AppCompatActivity {
                 })
                 .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        // User cancelled the dialog
+                        // User cancelled the dialog, just close the dialog
                     }
                 });
 
