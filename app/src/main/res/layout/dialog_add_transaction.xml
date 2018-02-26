@@ -38,64 +38,36 @@
             <RadioButton android:id="@+id/radio_pirates"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="asdfasdfa"
+                android:text="Dining"
                 android:onClick="onRadioButtonClicked"/>
             <RadioButton android:id="@+id/radio_ninjas"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="ninjass" />
+                android:text="Groceries" />
             <RadioButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="ninjass" />
+                android:text="Shopping" />
             <RadioButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="ninjass" />
+                android:text="Ground Transportation" />
             <RadioButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="ninjass" />
+                android:text="Travel" />
             <RadioButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="ninjass" />
+                android:text="Hotel and Lodging" />
             <RadioButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="ninjass" />
+                android:text="Gas Station and Fuel" />
             <RadioButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="ninjass" />
-            <RadioButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="ninjass" />
-            <RadioButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="ninjass" />
-            <RadioButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="ninjass" />
-            <RadioButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="ninjass" />
-            <RadioButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="ninjass" />
-            <RadioButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="ninjass" />
-            <RadioButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="ninjass" />
+                android:text="Other" />
 
         </RadioGroup>
     </ScrollView>
