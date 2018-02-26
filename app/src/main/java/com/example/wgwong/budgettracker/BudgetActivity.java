@@ -18,6 +18,8 @@ import android.widget.TextView;
 
 import org.w3c.dom.Text;
 
+import java.math.BigDecimal;
+
 public class BudgetActivity extends AppCompatActivity {
 
     @Override
@@ -74,14 +76,22 @@ public class BudgetActivity extends AppCompatActivity {
                 .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         // User clicked OK button
-                        //TODO verify inputs, if incorrect, do not close, if correct, add budget to screen
                         String transactionCost = ((EditText) transactionDialogContentView.findViewById(R.id.new_transaction_cost_edittext)).getText().toString();
-                        Float transactionValue = Float.parseFloat(transactionCost);
-                        TextView dailyBalanceTextView = findViewById(R.id.daily_balance);
-                        //todo, ensure there's always 2 digits after the decimal (no more no less)
-                        dailyBalanceTextView.setText("$" + String.valueOf(Float.parseFloat(dailyBalanceTextView.getText().toString().substring(1)) + transactionValue));
-                        Snackbar.make(findViewById(R.id.coordinator_layout), R.string.new_transaction_added_snackbar_message, Snackbar.LENGTH_SHORT)
-                                .show();
+                        if (transactionCost.length() > 0) {
+                            BigDecimal transactionValue = new BigDecimal(transactionCost);
+                            transactionValue.setScale(2, BigDecimal.ROUND_HALF_UP);
+
+
+                            TextView dailyBalanceTextView = findViewById(R.id.daily_balance);
+
+                            BigDecimal dailyBalance = new BigDecimal(dailyBalanceTextView.getText().toString().substring(1));
+                            BigDecimal newBalance = dailyBalance.add(transactionValue);
+
+                            String newBalanceText = "$" + newBalance.toString();
+                            dailyBalanceTextView.setText(newBalanceText);
+                            Snackbar.make(findViewById(R.id.coordinator_layout), R.string.new_transaction_added_snackbar_message, Snackbar.LENGTH_SHORT)
+                                    .show();
+                        }
 
                     }
                 })
@@ -90,6 +100,7 @@ public class BudgetActivity extends AppCompatActivity {
                         // User cancelled the dialog
                     }
                 });
+
         final EditText edit = transactionDialogContentView.findViewById(R.id.new_transaction_cost_edittext);
         edit.addTextChangedListener(new TextWatcher() {
             boolean _ignore = false; // indicates if the change was made by the TextWatcher itself.
@@ -108,6 +119,11 @@ public class BudgetActivity extends AppCompatActivity {
             public void afterTextChanged(Editable editable) {
                 if (_ignore) {
                     return;
+                }
+                String transactionString = editable.toString();
+                int decimalIndex = transactionString.indexOf(".");
+                if (decimalIndex > 0 && transactionString.substring(decimalIndex).length() > 2) {
+                    editable.delete(decimalIndex+3,editable.length());
                 }
                 //editable.insert(0,"$");
 
