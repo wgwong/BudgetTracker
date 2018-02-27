@@ -1,7 +1,9 @@
 package com.example.wgwong.budgettracker;
 
+import android.app.LauncherActivity;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
@@ -38,6 +40,7 @@ import static android.support.v4.view.GravityCompat.*;
 import static com.example.wgwong.budgettracker.R.id.*;
 
 public class BudgetActivity extends AppCompatActivity {
+    public static final String TRANSACTION_MESSAGE = "com.example.wgwong.budgettracker.TRANSACTION_MESSAGE";
     private DrawerLayout mDrawerLayout;
     private HashMap<String, ArrayList<Transaction>> transactions;
 
@@ -64,6 +67,27 @@ public class BudgetActivity extends AppCompatActivity {
 
                         // Add code here to update the UI based on the item selected
                         // For example, swap UI fragments here
+                        int id = item.getItemId();
+
+                        switch (id) {
+                            case nav_profile: {
+
+                            }
+                            case nav_transactions: {
+                                Intent intent = new Intent(getApplicationContext(), TransactionsActivity.class);
+                                intent.putExtra(TRANSACTION_MESSAGE, transactions);
+                                startActivity(intent);
+                            }
+                            case nav_trend: {
+
+                            }
+                            case nav_share: {
+
+                            }
+                            case nav_settings: {
+
+                            }
+                        }
 
                         return true;
                     }
