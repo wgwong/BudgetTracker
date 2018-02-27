@@ -33,10 +33,10 @@ import static android.support.v4.view.GravityCompat.*;
 import static com.example.wgwong.budgettracker.R.id.*;
 
 public class BudgetActivity extends AppCompatActivity {
-    private DrawerLayout mDrawerLayout;
     private HashMap<String, ArrayList<Transaction>> transactions;
     private BigDecimal balance;
     private BigDecimal budget;
+    private DrawerLayout mDrawerLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,30 +55,32 @@ public class BudgetActivity extends AppCompatActivity {
                     @Override
                     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                         // set item as selected to persist highlight
-                        item.setChecked(true);
+                        //item.setChecked(true);
                         // close drawer when item is tapped
                         mDrawerLayout.closeDrawers();
 
-                        // Add code here to update the UI based on the item selected
-                        // For example, swap UI fragments here
                         int id = item.getItemId();
 
                         switch (id) {
-                            case nav_profile: {
-
+                            case nav_home: {
+                                /*
+                                don't do anything since we're already here
+                                */
+                                break;
                             }
                             case nav_transactions: {
                                 Intent intent = new Intent(getApplicationContext(), TransactionsActivity.class);
                                 startActivity(intent);
+                                break;
                             }
                             case nav_trend: {
-
+                                break;
                             }
                             case nav_share: {
-
+                                break;
                             }
                             case nav_settings: {
-
+                                break;
                             }
                         }
 
@@ -126,8 +128,6 @@ public class BudgetActivity extends AppCompatActivity {
         switch (id) {
             case nav_drawer_button_id:
                 mDrawerLayout.openDrawer(START);
-                return true;
-            case action_settings:
                 return true;
         }
 

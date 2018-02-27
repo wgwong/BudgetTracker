@@ -4,15 +4,19 @@ import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
-import android.support.constraint.solver.widgets.ConstraintHorizontalLayout;
+import android.support.annotation.NonNull;
+import android.support.design.widget.NavigationView;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.NestedScrollView;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -25,10 +29,20 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import static android.support.v4.view.GravityCompat.START;
+import static com.example.wgwong.budgettracker.R.id.drawer_layout_transactions;
+import static com.example.wgwong.budgettracker.R.id.nav_home;
+import static com.example.wgwong.budgettracker.R.id.nav_settings;
+import static com.example.wgwong.budgettracker.R.id.nav_share;
+import static com.example.wgwong.budgettracker.R.id.nav_transactions;
+import static com.example.wgwong.budgettracker.R.id.nav_trend;
+import static com.example.wgwong.budgettracker.R.id.nav_view_transactions;
+
 public class TransactionsActivity extends AppCompatActivity {
     private HashMap<String, ArrayList<Transaction>> transactions;
     private BigDecimal balance;
     private BigDecimal budget;
+    private DrawerLayout mDrawerLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,9 +50,69 @@ public class TransactionsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_transactions);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        ActionBar actionbar = getSupportActionBar();
+        actionbar.setDisplayHomeAsUpEnabled(true);
+        actionbar.setHomeAsUpIndicator(R.drawable.ic_menu_white);
+
+        mDrawerLayout = findViewById(drawer_layout_transactions);
+        NavigationView navigationView = findViewById(nav_view_transactions);
+        navigationView.setNavigationItemSelectedListener(
+                new NavigationView.OnNavigationItemSelectedListener() {
+                    @Override
+                    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                        // set item as selected to persist highlight
+                        //item.setChecked(true);
+                        // close drawer when item is tapped
+                        mDrawerLayout.closeDrawers();
+
+                        int id = item.getItemId();
+
+                        switch (id) {
+                            case nav_home: {
+                                onBackPressed();
+                                break;
+                            }
+                            case nav_transactions: {
+                                /*
+                                don't do anything since we're already here
+                                */
+                                break;
+                            }
+                            case nav_trend: {
+                                break;
+                            }
+                            case nav_share: {
+                                break;
+                            }
+                            case nav_settings: {
+                                break;
+                            }
+                        }
+
+                        return true;
+                    }
+                }
+        );
 
         refresh();
         redraw();
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        final int nav_drawer_button_id = 16908332;
+        switch (id) {
+            case nav_drawer_button_id:
+                mDrawerLayout.openDrawer(START);
+                return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     private void redraw() {
