@@ -28,6 +28,7 @@ import java.util.HashMap;
 public class TransactionsActivity extends AppCompatActivity {
     private HashMap<String, ArrayList<Transaction>> transactions;
     private BigDecimal balance;
+    private BigDecimal budget;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -185,14 +186,27 @@ public class TransactionsActivity extends AppCompatActivity {
     }
 
     private void refresh() {
-        //try and load previous balance
+        //try and load previous balance & budget
         try {
             HashMap<String, BigDecimal> balanceMap = (HashMap<String, BigDecimal>) Utilities.loadFile(getString(R.string.balance_filename), getApplicationContext());
-            balance = balanceMap.get("balance");
+            if (balanceMap.containsKey("balance")) {
+                balance = balanceMap.get("balance");
+            } else {
+                balance = new BigDecimal(0);
+                balance.setScale(2, BigDecimal.ROUND_HALF_UP);
+            }
+            if (balanceMap.containsKey("budget")) {
+                budget = balanceMap.get("budget");
+            } else {
+                budget = new BigDecimal(25);
+                budget.setScale(2, BigDecimal.ROUND_HALF_UP);
+            }
         } catch (Exception e) {
             //no previous balance, proceed as usual
             balance = new BigDecimal(0);
             balance.setScale(2, BigDecimal.ROUND_HALF_UP);
+            budget = new BigDecimal(25);
+            budget.setScale(2, BigDecimal.ROUND_HALF_UP);
             Log.w("warn", "No balance file found, initializing new balance");
         }
 
@@ -217,10 +231,11 @@ public class TransactionsActivity extends AppCompatActivity {
     }
 
     private boolean persist() {
-        //persist balance
+        //persist balance & budget
         String filename = getString(R.string.balance_filename);
         HashMap<String, BigDecimal> balanceMap = new HashMap<>();
         balanceMap.put("balance", balance);
+        balanceMap.put("budget", budget);
         Utilities.saveFile(filename, balanceMap, getApplicationContext());
 
         //persist transactions

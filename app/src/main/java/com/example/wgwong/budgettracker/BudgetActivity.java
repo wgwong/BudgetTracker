@@ -36,6 +36,7 @@ public class BudgetActivity extends AppCompatActivity {
     private DrawerLayout mDrawerLayout;
     private HashMap<String, ArrayList<Transaction>> transactions;
     private BigDecimal balance;
+    private BigDecimal budget;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -214,22 +215,36 @@ public class BudgetActivity extends AppCompatActivity {
     }
     private void redraw() {
         ((TextView) findViewById(R.id.daily_balance)).setText("$" + balance.toString());
+        ((TextView) findViewById(R.id.daily_budget)).setText("$" + (budget.subtract(balance)).toString());
 
         //debug
         Log.d("debugg", "budgetactivity redraw balance - " + balance.toString());
     }
 
     private void refresh() {
-        //try and load previous balance
+        //try and load previous balance & budget
         try {
             HashMap<String, BigDecimal> balanceMap = (HashMap<String, BigDecimal>) Utilities.loadFile(getString(R.string.balance_filename), getApplicationContext());
-            balance = balanceMap.get("balance");
+            if (balanceMap.containsKey("balance")) {
+                balance = balanceMap.get("balance");
+            } else {
+                balance = new BigDecimal(0);
+                balance.setScale(2, BigDecimal.ROUND_HALF_UP);
+            }
+            if (balanceMap.containsKey("budget")) {
+                budget = balanceMap.get("budget");
+            } else {
+                budget = new BigDecimal(25);
+                budget.setScale(2, BigDecimal.ROUND_HALF_UP);
+            }
             Snackbar.make(findViewById(coordinator_layout), R.string.loaded_balance_message, Snackbar.LENGTH_SHORT)
                     .show();
         } catch (Exception e) {
             //no previous balance, proceed as usual
             balance = new BigDecimal(0);
             balance.setScale(2, BigDecimal.ROUND_HALF_UP);
+            budget = new BigDecimal(25);
+            budget.setScale(2, BigDecimal.ROUND_HALF_UP);
             Log.w("warn", "No balance file found, initializing new balance");
         }
 
@@ -256,10 +271,11 @@ public class BudgetActivity extends AppCompatActivity {
     }
 
     private boolean persist() {
-        //persist balance
+        //persist balance & budget
         String filename = getString(R.string.balance_filename);
         HashMap<String, BigDecimal> balanceMap = new HashMap<>();
         balanceMap.put("balance", balance);
+        balanceMap.put("budget", budget);
         Utilities.saveFile(filename, balanceMap, getApplicationContext());
 
         //persist transactions
@@ -272,6 +288,7 @@ public class BudgetActivity extends AppCompatActivity {
             Transaction transaction = transactions.get("today").get(i);
             Log.d("debugg", "budgetactivity persist - " + transaction.toString());
         }
+
         return true;
     }
 }
