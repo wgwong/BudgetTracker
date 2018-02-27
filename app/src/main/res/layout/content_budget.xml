@@ -24,14 +24,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:fontFamily="@font/pt_sans"
-            android:text="Today's Expenses"
+            android:text="@string/today_balance"
             android:textIsSelectable="false"
             android:textSize="14pt"
-            android:textColor="@android:color/background_light"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            android:textColor="@android:color/background_light" />
 
         <TextView
             android:id="@+id/daily_balance"
@@ -39,14 +35,12 @@
             android:layout_height="wrap_content"
             android:fontFamily="@font/pt_sans_bold"
             android:gravity="center_horizontal"
-            android:text="$00.00"
+            android:text="@string/empty_balance_hint"
             android:textIsSelectable="false"
             android:textSize="28pt"
             android:textStyle="bold"
             android:textColor="@android:color/background_light"
-            app:layout_constraintBottom_toBottomOf="@id/today_expenses_textview"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent" />
+            app:layout_constraintBottom_toBottomOf="@id/today_expenses_textview" />
     </LinearLayout>
 
 

@@ -41,40 +41,39 @@
             <RadioButton android:id="@+id/radio_dining"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Dining"/>
+                android:text="@string/transaction_category_dining"/>
             <RadioButton android:id="@+id/radio_groceries"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Groceries" />
+                android:text="@string/transaction_category_groceries" />
             <RadioButton android:id="@+id/radio_retail"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Retail" />
+                android:text="@string/transaction_category_retail" />
             <RadioButton android:id="@+id/radio_entertainment"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Entertainment" />
+                android:text="@string/transaction_category_entertainment" />
             <RadioButton android:id="@+id/radio_transportation"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Transportation" />
+                android:text="@string/transaction_category_transportation" />
             <RadioButton android:id="@+id/radio_travel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Travel" />
+                android:text="@string/transaction_category_travel" />
             <RadioButton android:id="@+id/radio_hotel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Hotel/Lodging" />
+                android:text="@string/transaction_category_hotel" />
             <RadioButton android:id="@+id/radio_gas"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Gas Station/Fuel" />
+                android:text="@string/transaction_category_gas" />
             <RadioButton android:id="@+id/radio_other"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Other" />
-
+                android:text="@string/transaction_category_other" />
         </RadioGroup>
     </ScrollView>
 </LinearLayout>

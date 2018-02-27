@@ -4,20 +4,20 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 
-/**
- * Created by wgwong on 2/26/2018.
- */
-
 public class Transaction implements Serializable{
+    private int id;
     private Date timestamp;
     private BigDecimal cost;
     private String category;
 
     public Transaction(Date timestamp, BigDecimal cost, String category) {
+        id = Utilities.generateRandomId();
         this.timestamp = timestamp;
         this.cost = cost;
         this.category = category;
     }
+
+    public int getId() { return id; }
 
     public Date getTimestamp() {
         return timestamp;
@@ -33,6 +33,6 @@ public class Transaction implements Serializable{
 
     @Override
     public String toString() {
-        return "Transaction (" + timestamp.toString() + ") - Cost: " + cost.toString() + " - Category: " + category;
+        return "Transaction [" + String.valueOf(id) + "] (" + timestamp.toString() + ") - Cost: " + cost.toString() + " - Category: " + category;
     }
 }

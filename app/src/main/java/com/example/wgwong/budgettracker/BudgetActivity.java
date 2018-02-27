@@ -1,7 +1,5 @@
 package com.example.wgwong.budgettracker;
 
-import android.app.LauncherActivity;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -26,11 +24,6 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
@@ -40,9 +33,9 @@ import static android.support.v4.view.GravityCompat.*;
 import static com.example.wgwong.budgettracker.R.id.*;
 
 public class BudgetActivity extends AppCompatActivity {
-    public static final String TRANSACTION_MESSAGE = "com.example.wgwong.budgettracker.TRANSACTION_MESSAGE";
     private DrawerLayout mDrawerLayout;
     private HashMap<String, ArrayList<Transaction>> transactions;
+    private BigDecimal balance;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,7 +68,6 @@ public class BudgetActivity extends AppCompatActivity {
                             }
                             case nav_transactions: {
                                 Intent intent = new Intent(getApplicationContext(), TransactionsActivity.class);
-                                intent.putExtra(TRANSACTION_MESSAGE, transactions);
                                 startActivity(intent);
                             }
                             case nav_trend: {
@@ -103,38 +95,16 @@ public class BudgetActivity extends AppCompatActivity {
             }
         });
 
-        transactions = new HashMap<>();
-        transactions.put("today", new ArrayList<Transaction>());
-        transactions.put("weekly", new ArrayList<Transaction>());
+        refresh();
+        redraw();
+    }
 
-        //try and load previous balance
-        HashMap<String, String> balanceMap;
-        try {
-            balanceMap = (HashMap<String, String>) loadFile(getString(R.string.balance_filename));
-            ((TextView) findViewById(R.id.daily_balance)).setText(balanceMap.get("balance"));
-            Snackbar.make(findViewById(coordinator_layout), R.string.loaded_balance_message, Snackbar.LENGTH_SHORT)
-                    .show();
-        } catch (Exception e) {
-            //no previous balance, proceed as usual
-            Log.w("warn", "No balance file found, initializing new balance");
-        }
-
-        //try and load previous transactions
-        try {
-            transactions = (HashMap<String, ArrayList<Transaction>>) loadFile(getString(R.string.transactions_filename));
-            Snackbar.make(findViewById(coordinator_layout), R.string.loaded_transactions_message, Snackbar.LENGTH_SHORT)
-                    .show();
-        } catch (Exception e) {
-            //no previous transactions, proceed as usual
-            //TODO handle the case where the balance exists but the transactions are missing or vice versa
-            Log.w("warn", "No transactions file found, initializing new transactions list");
-        }
-
-        //debug
-        ArrayList<Transaction> transactionList = transactions.get("today");
-        for (int i = 0; i < transactionList.size(); i++) {
-            Log.d("debugg", "loaded transaction: " + transactionList.get(i).toString());
-        }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.d("debugg", "resuming budgetactivity"); //debug
+        refresh();
+        redraw();
     }
 
     @Override
@@ -163,39 +133,7 @@ public class BudgetActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    public boolean saveFile(String filename, HashMap contents) {
-        FileOutputStream outputStream;
-        ObjectOutputStream out;
-        try {
-            outputStream = openFileOutput(filename, Context.MODE_PRIVATE);
-            out = new ObjectOutputStream(outputStream);
-            out.writeObject(contents);
-            out.close();
-            outputStream.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return true;
-    }
-
-    public Object loadFile(String filename) {
-        FileInputStream inputStream;
-        ObjectInputStream in;
-        Object contents = new Object();
-        try {
-            inputStream = new FileInputStream(getFilesDir() + "/" + filename);
-            in = new ObjectInputStream(inputStream);
-            contents = in.readObject();
-            in.close();
-            inputStream.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return contents;
-    }
-
-    public AlertDialog createTransactionDialog() {
+    private AlertDialog createTransactionDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         LayoutInflater inflater = this.getLayoutInflater();
 
@@ -203,10 +141,7 @@ public class BudgetActivity extends AppCompatActivity {
         // Pass null as the parent view because its going in the dialog layout
         final View transactionDialogContentView = inflater.inflate(R.layout.dialog_add_transaction, null);
         builder.setView(transactionDialogContentView)
-                //add informative text
-                //.setMessage(R.string.new_transaction_content_message)
                 .setTitle(R.string.new_transaction_title)
-                //add action buttons
                 .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         // User clicked OK button
@@ -216,11 +151,8 @@ public class BudgetActivity extends AppCompatActivity {
                             transactionValue.setScale(2, BigDecimal.ROUND_HALF_UP);
 
                             TextView dailyBalanceTextView = findViewById(daily_balance);
-                            BigDecimal dailyBalance = new BigDecimal(dailyBalanceTextView.getText().toString().substring(1));
-                            BigDecimal newBalance = dailyBalance.add(transactionValue);
-
-                            String newBalanceText = "$" + newBalance.toString();
-                            dailyBalanceTextView.setText(newBalanceText);
+                            balance = balance.add(transactionValue);
+                            dailyBalanceTextView.setText("$" + balance.toString());
 
                             //get transaction category
                             RadioGroup rg = transactionDialogContentView.findViewById(R.id.new_transaction_category_radiogroup); //TODO find some way to not make this null
@@ -231,20 +163,8 @@ public class BudgetActivity extends AppCompatActivity {
                             transactions.get("today").add(transaction);
                             transactions.get("weekly").add(transaction);
 
-                            //persist balance
-                            String filename = getString(R.string.balance_filename);
-                            HashMap<String, String> balanceMap = new HashMap<>();
-                            balanceMap.put("balance", newBalanceText);
-                            saveFile(filename, balanceMap);
-                            //persist transactions
-                            filename = getString(R.string.transactions_filename);
-                            saveFile(filename, transactions);
-
-                            //debug
-                            ArrayList<Transaction> transactionList = transactions.get("today");
-                            for (int i = 0; i < transactionList.size(); i++) {
-                                Log.d("debugg", transactionList.get(i).toString());
-                            }
+                            persist();
+                            redraw();
 
                             Snackbar.make(findViewById(coordinator_layout), R.string.new_transaction_added_snackbar_message, Snackbar.LENGTH_SHORT)
                                     .show();
@@ -278,8 +198,9 @@ public class BudgetActivity extends AppCompatActivity {
                     return;
                 }
                 String transactionString = editable.toString();
+
                 int decimalIndex = transactionString.indexOf(".");
-                if (decimalIndex > 0 && transactionString.substring(decimalIndex).length() > 2) {
+                if (decimalIndex >= 0 && transactionString.substring(decimalIndex).length() > 3) {
                     editable.delete(decimalIndex+3,editable.length());
                 }
 
@@ -290,5 +211,67 @@ public class BudgetActivity extends AppCompatActivity {
         });
 
         return builder.create();
+    }
+    private void redraw() {
+        ((TextView) findViewById(R.id.daily_balance)).setText("$" + balance.toString());
+
+        //debug
+        Log.d("debugg", "budgetactivity redraw balance - " + balance.toString());
+    }
+
+    private void refresh() {
+        //try and load previous balance
+        try {
+            HashMap<String, BigDecimal> balanceMap = (HashMap<String, BigDecimal>) Utilities.loadFile(getString(R.string.balance_filename), getApplicationContext());
+            balance = balanceMap.get("balance");
+            Snackbar.make(findViewById(coordinator_layout), R.string.loaded_balance_message, Snackbar.LENGTH_SHORT)
+                    .show();
+        } catch (Exception e) {
+            //no previous balance, proceed as usual
+            balance = new BigDecimal(0);
+            balance.setScale(2, BigDecimal.ROUND_HALF_UP);
+            Log.w("warn", "No balance file found, initializing new balance");
+        }
+
+        //try and load previous transactions
+        try {
+            transactions = (HashMap<String, ArrayList<Transaction>>) Utilities.loadFile(getString(R.string.transactions_filename), getApplicationContext());
+            Snackbar.make(findViewById(coordinator_layout), R.string.loaded_transactions_message, Snackbar.LENGTH_SHORT)
+                    .show();
+        } catch (Exception e) {
+            //no previous transactions, proceed as usual
+            //TODO handle the case where the balance exists but the transactions are missing or vice versa
+            transactions = new HashMap<>();
+            transactions.put("today", new ArrayList<Transaction>());
+            transactions.put("weekly", new ArrayList<Transaction>());
+            Log.w("warn", "No transactions file found, initializing new transactions list");
+        }
+
+        //debug
+        Log.d("debugg", "budgetactivity refresh balance - " + balance.toString());
+        for (int i = 0; i < transactions.get("today").size(); i++) {
+            Transaction transaction = transactions.get("today").get(i);
+            Log.d("debugg", "budgetactivity refresh - " + transaction.toString());
+        }
+    }
+
+    private boolean persist() {
+        //persist balance
+        String filename = getString(R.string.balance_filename);
+        HashMap<String, BigDecimal> balanceMap = new HashMap<>();
+        balanceMap.put("balance", balance);
+        Utilities.saveFile(filename, balanceMap, getApplicationContext());
+
+        //persist transactions
+        filename = getString(R.string.transactions_filename);
+        Utilities.saveFile(filename, transactions, getApplicationContext());
+
+        //debug
+        Log.d("debugg", "budgetactivity persist balance - " + balance.toString());
+        for (int i = 0; i < transactions.get("today").size(); i++) {
+            Transaction transaction = transactions.get("today").get(i);
+            Log.d("debugg", "budgetactivity persist - " + transaction.toString());
+        }
+        return true;
     }
 }
