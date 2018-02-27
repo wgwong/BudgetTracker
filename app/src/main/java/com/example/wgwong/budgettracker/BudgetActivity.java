@@ -91,12 +91,26 @@ public class BudgetActivity extends AppCompatActivity {
             Snackbar.make(findViewById(coordinator_layout), R.string.loaded_balance_message, Snackbar.LENGTH_SHORT)
                     .show();
         } catch (Exception e) {
-            //no old balance, proceed as usual
+            //no previous balance, proceed as usual
             Log.w("warn", "No balance file found, initializing new balance");
         }
 
         //try and load previous transactions
-        //TODO
+        try {
+            transactions = (HashMap<String, ArrayList<Transaction>>) loadFile(getString(R.string.transactions_filename));
+            Snackbar.make(findViewById(coordinator_layout), R.string.loaded_transactions_message, Snackbar.LENGTH_SHORT)
+                    .show();
+        } catch (Exception e) {
+            //no previous transactions, proceed as usual
+            //TODO handle the case where the balance exists but the transactions are missing or vice versa
+            Log.w("warn", "No transactions file found, initializing new transactions list");
+        }
+
+        //debug
+        ArrayList<Transaction> transactionList = transactions.get("today");
+        for (int i = 0; i < transactionList.size(); i++) {
+            Log.d("debugg", "loaded transaction: " + transactionList.get(i).toString());
+        }
     }
 
     @Override
@@ -185,8 +199,8 @@ public class BudgetActivity extends AppCompatActivity {
                             dailyBalanceTextView.setText(newBalanceText);
 
                             //get transaction category
-                            RadioGroup rg = findViewById(R.id.new_transaction_category_radiogroup); //TODO find some way to not make this null
-                            RadioButton selectedRadioButton = findViewById(rg.getCheckedRadioButtonId());
+                            RadioGroup rg = transactionDialogContentView.findViewById(R.id.new_transaction_category_radiogroup); //TODO find some way to not make this null
+                            RadioButton selectedRadioButton = transactionDialogContentView.findViewById(rg.getCheckedRadioButtonId());
                             String selectedCategoryText = selectedRadioButton.getText().toString();
 
                             Transaction transaction = new Transaction(new Date(), transactionValue, selectedCategoryText);

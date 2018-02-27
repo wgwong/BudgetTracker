@@ -1,5 +1,6 @@
 package com.example.wgwong.budgettracker;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 
@@ -7,7 +8,7 @@ import java.util.Date;
  * Created by wgwong on 2/26/2018.
  */
 
-public class Transaction {
+public class Transaction implements Serializable{
     private Date timestamp;
     private BigDecimal cost;
     private String category;

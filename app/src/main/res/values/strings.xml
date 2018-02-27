@@ -5,6 +5,7 @@
     <string name="cancel">Cancel</string>
     <string name="help">Help</string>
     <string name="loaded_balance_message">Loaded previous balance</string>
+    <string name="loaded_transactions_message">Loaded previous transactions</string>
     <string name="new_transaction_title">Add a transaction cost</string>
     <string name="new_transaction_content_message">Enter cost: </string>
     <string name="new_transaction_cost_hint">$00.00</string>
@@ -16,5 +17,6 @@
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
     <string name="balance_filename">balance.txt</string>
-    <string name="transactions_filename">balance.txt</string>
+    <string name="transactions_filename">transactions.txt</string>
+
 </resources>

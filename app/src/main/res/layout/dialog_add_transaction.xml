@@ -30,7 +30,8 @@
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="130dp"
-        android:layout_margin="20px">
+        android:layout_margin="20px"
+        android:fadeScrollbars="false">
         <RadioGroup
             android:id="@+id/new_transaction_category_radiogroup"
             xmlns:android="http://schemas.android.com/apk/res/android"
