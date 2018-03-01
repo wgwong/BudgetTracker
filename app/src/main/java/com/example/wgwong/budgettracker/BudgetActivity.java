@@ -19,9 +19,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.WindowManager;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import java.lang.reflect.Array;
@@ -45,6 +48,8 @@ public class BudgetActivity extends AppCompatActivity {
     private BigDecimal budget;
     private DrawerLayout mDrawerLayout;
 
+    private ProgressBar progressBar;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,7 +60,17 @@ public class BudgetActivity extends AppCompatActivity {
         actionbar.setDisplayHomeAsUpEnabled(true);
         actionbar.setHomeAsUpIndicator(R.drawable.ic_menu_white);
 
-        mDrawerLayout = findViewById(drawer_layout);
+        mDrawerLayout = findViewById(drawer_layout); //get drawer layout (overarching layout view for main activity)
+
+        //initialize progress bar
+        progressBar = new ProgressBar(this,null,android.R.attr.progressBarStyleLarge);
+        RelativeLayout.LayoutParams progressBarLayoutParams = new RelativeLayout.LayoutParams(100,100);
+        progressBarLayoutParams.addRule(RelativeLayout.CENTER_IN_PARENT);
+
+        mDrawerLayout.addView(progressBar,progressBarLayoutParams); //add progress bar to drawer layout
+
+        showProgressBar();
+
         NavigationView navigationView = findViewById(nav_view);
         navigationView.setNavigationItemSelectedListener(
                 new NavigationView.OnNavigationItemSelectedListener() {
@@ -106,17 +121,24 @@ public class BudgetActivity extends AppCompatActivity {
         });
 
         refresh();
+        hideProgressBar();
         analyzeTransactions();
+        showProgressBar();
         redraw();
+        hideProgressBar();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         Log.d("debugg", "resuming budgetactivity"); //debug
+        showProgressBar();
         refresh();
+        hideProgressBar();
         analyzeTransactions();
+        showProgressBar();
         redraw();
+        hideProgressBar();
     }
 
     @Override
@@ -173,8 +195,10 @@ public class BudgetActivity extends AppCompatActivity {
                             transactions.get("today").add(transaction);
                             transactions.get("weekly").add(transaction);
 
+                            showProgressBar();
                             persist();
                             redraw();
+                            hideProgressBar();
 
                             Snackbar.make(findViewById(coordinator_layout), R.string.new_transaction_added_snackbar_message, Snackbar.LENGTH_SHORT)
                                     .show();
@@ -229,6 +253,20 @@ public class BudgetActivity extends AppCompatActivity {
 
         //debug
         Log.d("debugg", "budgetactivity redraw balance - " + balance.toString());
+    }
+
+    private void showProgressBar() {
+        progressBar.setVisibility(View.VISIBLE);
+    }
+    private void hideProgressBar() {
+        progressBar.setVisibility(View.GONE);
+    }
+
+    private void enableUserInteraction() {
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE, WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+    }
+    private void disableUserInteraction() {
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
     }
 
     private void refresh() {
