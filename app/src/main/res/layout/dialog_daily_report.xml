@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/daily_report_content_message_textview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/pt_sans"
+        android:text="content_message"
+        android:textColor="@android:color/black"
+        android:textIsSelectable="false"
+        android:textSize="12pt"
+        android:layout_gravity="center_horizontal"
+        android:gravity="center_horizontal"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="16dp"/>
+
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/pt_sans"
+        android:text="Yesterday's balance"
+        android:textColor="@android:color/black"
+        android:textIsSelectable="false"
+        android:textSize="10pt"
+        android:layout_gravity="center_horizontal"/>
+
+    <TextView
+        android:id="@+id/daily_report_balance_number"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/pt_sans"
+        android:text="$00.00"
+        android:textColor="@color/colorAccent"
+        android:textIsSelectable="false"
+        android:textSize="16pt"
+        android:layout_gravity="center_horizontal"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/pt_sans"
+        android:text="Budget"
+        android:textColor="@android:color/black"
+        android:textIsSelectable="false"
+        android:textSize="10pt"
+        android:layout_gravity="center_horizontal"/>
+
+    <TextView
+        android:id="@+id/daily_report_budget_number"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/pt_sans"
+        android:text="$00.00"
+        android:textColor="@color/colorAccentCompliment"
+        android:textIsSelectable="false"
+        android:textSize="16pt"
+        android:layout_gravity="center_horizontal"/>
+
+</LinearLayout>

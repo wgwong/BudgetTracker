@@ -24,15 +24,22 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 
+import java.lang.reflect.Array;
 import java.math.BigDecimal;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 
 import static android.support.v4.view.GravityCompat.*;
 import static com.example.wgwong.budgettracker.R.id.*;
 
 public class BudgetActivity extends AppCompatActivity {
+    final long dayInMilliseconds = 86400000;
+
     private HashMap<String, ArrayList<Transaction>> transactions;
     private BigDecimal balance;
     private BigDecimal budget;
@@ -99,6 +106,7 @@ public class BudgetActivity extends AppCompatActivity {
         });
 
         refresh();
+        analyzeTransactions();
         redraw();
     }
 
@@ -107,6 +115,7 @@ public class BudgetActivity extends AppCompatActivity {
         super.onResume();
         Log.d("debugg", "resuming budgetactivity"); //debug
         refresh();
+        analyzeTransactions();
         redraw();
     }
 
@@ -160,7 +169,7 @@ public class BudgetActivity extends AppCompatActivity {
                             RadioButton selectedRadioButton = transactionDialogContentView.findViewById(rg.getCheckedRadioButtonId());
                             String selectedCategoryText = selectedRadioButton.getText().toString();
 
-                            Transaction transaction = new Transaction(new Date(), transactionValue, selectedCategoryText);
+                            Transaction transaction = new Transaction(Calendar.getInstance().getTime(), transactionValue, selectedCategoryText);
                             transactions.get("today").add(transaction);
                             transactions.get("weekly").add(transaction);
 
@@ -202,7 +211,7 @@ public class BudgetActivity extends AppCompatActivity {
 
                 int decimalIndex = transactionString.indexOf(".");
                 if (decimalIndex >= 0 && transactionString.substring(decimalIndex).length() > 3) {
-                    editable.delete(decimalIndex+3,editable.length());
+                    editable.delete(decimalIndex + 3, editable.length());
                 }
 
                 _ignore = true; //prevent infinite loop
@@ -213,6 +222,7 @@ public class BudgetActivity extends AppCompatActivity {
 
         return builder.create();
     }
+
     private void redraw() {
         ((TextView) findViewById(R.id.daily_balance)).setText("$" + balance.toString());
         ((TextView) findViewById(R.id.daily_budget)).setText("$" + (budget.subtract(balance)).toString());
@@ -290,5 +300,113 @@ public class BudgetActivity extends AppCompatActivity {
         }
 
         return true;
+    }
+
+    private BigDecimal calculateTodayBalance(ArrayList<Transaction> todayTransactions) {
+        BigDecimal balance = new BigDecimal(0);
+        balance.setScale(2, BigDecimal.ROUND_HALF_UP);
+
+        for (int i = 0; i < todayTransactions.size(); i++) {
+            balance = balance.add(todayTransactions.get(i).getCost());
+        }
+
+        return balance;
+    }
+
+    private void analyzeTransactions() {
+        //check if there are any old transactions in today's list (older than today 12:00 am)
+        ArrayList<Transaction> todayTransactions = transactions.get("today");
+
+        for (int i = 0; i < todayTransactions.size(); i++) {
+            Log.d("debugg", "analyzeTransactions: todaysTransactions - " + todayTransactions.get(i).toString()); //debug
+        }
+
+        GregorianCalendar gc = new GregorianCalendar();
+        int year = gc.get(Calendar.YEAR);
+        int month = gc.get(Calendar.MONTH);
+        int day = gc.get(Calendar.DAY_OF_MONTH);
+        GregorianCalendar earliestTodayCalendar = new GregorianCalendar();
+        earliestTodayCalendar.set(year, month, day, 0, 0, 0);
+
+        Date earliestTodayDate = earliestTodayCalendar.getTime();
+
+        ArrayList<Transaction> yesterdayTransactions = new ArrayList<>();
+
+        if (todayTransactions.size() > 0) {
+            int indexToCheck = 0;
+            while (true) {
+                Transaction currentTransaction = todayTransactions.get(indexToCheck);
+                Date transactionDate = currentTransaction.getTimestamp();
+                if (transactionDate.before(earliestTodayDate)) { //found transactions not from today
+                    //if transactions from yesterday, add to yesterdayTransactions to generate yesterday's progress report
+                    if (earliestTodayDate.getTime() - transactionDate.getTime() <= dayInMilliseconds) {
+                        yesterdayTransactions.add(currentTransaction);
+                    }
+                    todayTransactions.remove(indexToCheck);
+                } else {
+                    indexToCheck++;
+                }
+                if (indexToCheck >= todayTransactions.size()) { //reached end of list
+                    break;
+                }
+            }
+        }
+
+        transactions.put("today", todayTransactions); //update today's transactions list
+        balance = calculateTodayBalance(todayTransactions); //update today's balance
+        persist();
+
+        if (yesterdayTransactions.size() > 0) {
+            generateProgressReport(yesterdayTransactions);
+        }
+    }
+
+    private void generateProgressReport(ArrayList<Transaction> yesterdayTransactions) {
+        BigDecimal yesterdayBalance = new BigDecimal(0);
+        yesterdayBalance.setScale(2, BigDecimal.ROUND_HALF_UP);
+        for (int i = 0; i < yesterdayTransactions.size(); i++) {
+            yesterdayBalance = yesterdayBalance.add(yesterdayTransactions.get(i).getCost());
+        }
+        createDailyReportDialog(yesterdayTransactions.get(0).getTimestamp(), yesterdayBalance).show();
+    }
+
+    private AlertDialog createDailyReportDialog(Date yesterdayTimestamp, BigDecimal yBalance) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        LayoutInflater inflater = this.getLayoutInflater();
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        String yesterdayString = dateFormat.format(yesterdayTimestamp);
+
+        // Inflate and set the layout for the dialog
+        // Pass null as the parent view because its going in the dialog layout
+        final View dailyReportDialogContentView = inflater.inflate(R.layout.dialog_daily_report, null);
+        builder.setView(dailyReportDialogContentView)
+                .setTitle(getString(R.string.daily_report_title) + " (" + yesterdayString + ")")
+                .setNegativeButton(R.string.close, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        //do nothing, close modal
+                        redraw();
+                    }
+                })
+                .setNeutralButton(R.string.view_yesterday_transaction, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        redraw();
+                        //view transactions w/ parameter yesterday
+                    }
+                });
+
+        BigDecimal finalBalance = yBalance.subtract(budget);
+
+        String dialog_content_message;
+        if (finalBalance.compareTo(new BigDecimal(0)) == 1) { //final balance was positive, went over budget
+            dialog_content_message = getString(R.string.daily_report_content_message_went) + " $" + finalBalance.toString() + " " + getString(R.string.daily_report_content_message_over_budget);
+        } else { //saved money or met budget
+            dialog_content_message = getString(R.string.daily_report_content_message_saved) + " $" + (finalBalance.multiply(new BigDecimal(-1))).toString() + getString(R.string.exclamation_mark);
+        }
+        ((TextView) dailyReportDialogContentView.findViewById(R.id.daily_report_content_message_textview)).setText(dialog_content_message);
+        ((TextView) dailyReportDialogContentView.findViewById(R.id.daily_report_balance_number)).setText("$" + yBalance.toString());
+        ((TextView) dailyReportDialogContentView.findViewById(R.id.daily_report_budget_number)).setText("$" + budget.toString());
+
+        return builder.create();
     }
 }

@@ -3,9 +3,12 @@
     <string name="action_settings">Settings</string>
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
+    <string name="close">Close</string>
     <string name="help">Help</string>
     <string name="edit">Edit</string>
     <string name="delete">Delete</string>
+    <string name="period">.</string>
+    <string name="exclamation_mark">!</string>
 
     <string name="loaded_balance_message">Loaded previous balance</string>
     <string name="loaded_transactions_message">Loaded previous transactions</string>
@@ -28,6 +31,12 @@
     <string name="transaction_category_gas">Gas Station/Fuel</string>
     <string name="transaction_category_other">Other</string>
     <string name="new_transaction_added_snackbar_message">Added transaction to balance!</string>
+
+    <string name="daily_report_title">Daily Progress Report</string>
+    <string name="daily_report_content_message_saved">You saved</string>
+    <string name="daily_report_content_message_went">You went</string>
+    <string name="daily_report_content_message_over_budget">over budget yesterday.</string>
+    <string name="view_yesterday_transaction">View Yesterday\'s Transactions</string>
 
     <string name="view_trend">View Trend</string>
 
